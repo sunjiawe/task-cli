@@ -67,10 +67,11 @@ graph TD
     
     H_quit --> J[退出程序];
 
-    subgraph "LLM 调用流程"
+    subgraph "LLM 调用流程 (已优化)"
         subgraph Decompose
             I --> D_Start
-            D_Start[获取用户需求] --> D_Ctx[准备上下文(项目目标、现有任务)] --> D_LLM[调用 LLM 拆解] --> D_Parse[解析并校验 LLM 响应] --> D_Save[保存新任务到 db.json] --> D_Display[向用户展示新任务]
+            D_Start[获取用户需求] --> D_Ctx[准备上下文(项目目标、**未完成的**任务)] --> D_LLM[调用 LLM 拆解] --> D_Parse[解析并校验 LLM 响应] --> D_Save[保存新任务到 db.json] --> D_Display[向用户展示新任务]
+            note right of D_Ctx: 使用 storage.query_tasks(status=['todo', 'in_progress', 'blocked']) 过滤上下文
         end
         
         subgraph Howto
@@ -80,7 +81,8 @@ graph TD
 
         subgraph QA
             H_qa --> QA_Start
-            QA_Start[获取用户问题] --> QA_Ctx[准备上下文(项目元数据、所有任务)] --> QA_LLM[调用 LLM 生成回答] --> QA_Display[向用户展示回答]
+            QA_Start[获取用户问题] --> QA_Ctx[准备上下文(项目元数据、**相关的**任务)] --> QA_LLM[调用 LLM 生成回答] --> QA_Display[向用户展示回答]
+            note right of QA_Ctx: 默认使用 query_tasks 仅传递未完成的任务，<br>除非问题明确涉及历史数据
         end
     end
 ```
@@ -91,6 +93,7 @@ graph TD
   - `init_project(name, goal)`: 初始化项目数据库文件。
   - `load_db()`: 加载整个 JSON 数据库。
   - `save_db(data)`: 将整个数据对象保存回 JSON 文件。
+  - `query_tasks(status=None, overdue=None)`: 根据条件查询任务。`status` 是一个状态列表 (e.g., `['todo', 'in_progress']`)；`overdue` 为 `True` 时返回超期任务。
 - `llm_api.py`: 封装与大语言模型交互的接口。
   - `decompose_requirement(requirement, project_context)`: 拆解需求。
   - `get_task_advice(task, project_context)`: 为任务生成建议。
