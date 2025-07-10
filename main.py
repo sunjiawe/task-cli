@@ -47,7 +47,7 @@ def handle_decompose(requirement):
     """Handles the '/decompose' command."""
     console.print(f"[cyan]Decomposing requirement: {requirement}...[/cyan]")
     db_data = load_db()
-    project_context = db_data.get('project', {})
+    project_context = db_data
     new_tasks = decompose_requirement(requirement, project_context)
     if new_tasks:
         db_data["tasks"].extend(new_tasks)
