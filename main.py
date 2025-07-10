@@ -2,11 +2,25 @@ import os
 import sys
 import questionary
 from rich.console import Console
+from questionary.prompts.autocomplete import WordCompleter
 from utils.storage import init_project, load_db, query_tasks, save_db
 from utils.display import display_tasks
 from utils.llm_api import decompose_requirement, get_task_advice, generate_report, answer_question
 
 console = Console()
+
+# Define subcommands
+SUBCOMMANDS = {
+    "/list": "List all tasks.",
+    "/decompose": "Decompose a requirement into new tasks.",
+    "/howto": "Get advice on how to perform a specific task.",
+    "/report": "Generate a project report.",
+    "/qa": "Ask a question about the project.",
+    "/help": "Show this help message.",
+    "/quit": "Exit the application.",
+}
+
+command_completer = WordCompleter(list(SUBCOMMANDS.keys()), ignore_case=True)
 
 def handle_init():
     """Handles the 'init' command."""
@@ -83,6 +97,13 @@ def handle_qa(question):
     answer = answer_question(question, project_context)
     console.print(f"[bold green]Answer:[/bold green]\n{answer}")
 
+def handle_help():
+    """Displays the help message."""
+    console.print("\n[bold]Available commands:[/bold]")
+    for cmd, desc in SUBCOMMANDS.items():
+        console.print(f"  [cyan]{cmd}[/cyan]: {desc}")
+    console.print("\nType any other text to start decomposing a new requirement.\n")
+
 def main_repl():
     """Main Read-Eval-Print Loop."""
     if not os.path.exists(".xixi/db.json"):
@@ -90,42 +111,51 @@ def main_repl():
         return
 
     console.print("[bold green]Welcome to Xixi AI Project Manager![/bold green]")
-    console.print("Type a command with a '/' prefix or your requirement to start.")
+    console.print("Type a command with a '/' prefix or your requirement to start. Type /help for commands.")
 
     while True:
         try:
-            user_input = questionary.text("> ").ask()
+            user_input = questionary.text("> ", completer=command_completer).ask()
             if not user_input:
                 continue
-            if user_input.lower() == '/quit':
+
+            if user_input == "/":
+                handle_help()
+                continue
+
+            command = user_input.lower().split()[0]
+
+            if command == '/quit':
                 break
-            if user_input.lower() == '/list':
+            elif command == '/list':
                 handle_list()
-            elif user_input.lower().startswith('/decompose'):
+            elif command == '/decompose':
                 parts = user_input.split(maxsplit=1)
                 requirement = parts[1] if len(parts) > 1 else ""
                 if not requirement:
                     requirement = questionary.text("What is the requirement to decompose?").ask()
                 if requirement:
                     handle_decompose(requirement)
-            elif user_input.lower().startswith('/howto'):
+            elif command == '/howto':
                 parts = user_input.split(maxsplit=1)
                 task_id = parts[1] if len(parts) > 1 else ""
                 if not task_id:
                     task_id = questionary.text("Enter the task ID for which you need advice:").ask()
                 if task_id:
                     handle_howto(task_id)
-            elif user_input.lower() == '/report':
+            elif command == '/report':
                 handle_report()
-            elif user_input.lower().startswith('/qa'):
+            elif command == '/qa':
                 parts = user_input.split(maxsplit=1)
                 question = parts[1] if len(parts) > 1 else ""
                 if not question:
                     question = questionary.text("What is your question?").ask()
                 if question:
                     handle_qa(question)
+            elif command == '/help':
+                handle_help()
             elif user_input.startswith('/'):
-                console.print(f"[yellow]Unknown command: {user_input}[/yellow]")
+                console.print(f"[yellow]Unknown command: {user_input}. Type /help for available commands.[/yellow]")
             else:
                 handle_decompose(user_input)
         except KeyboardInterrupt:
