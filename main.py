@@ -71,7 +71,7 @@ def handle_howto(task_id):
         return
 
     console.print(f"[cyan]Generating advice for task: {task.get('title')}...[/cyan]")
-    project_context = db_data.get('project', {})
+    project_context = db_data
     advice = get_task_advice(task, project_context)
     console.print(f"[bold green]Advice:[/bold green]\n{advice}")
 
