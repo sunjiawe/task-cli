@@ -2,10 +2,11 @@ from openai import OpenAI
 import os
 
 # Learn more about calling the LLM: https://the-pocket.github.io/PocketFlow/utility_function/llm.html
-def call_llm(prompt):    
-    client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY", "your-api-key"))
+def call_llm(prompt):
+    from openai import OpenAI
+    client = OpenAI(api_key="YOUR_DEEPSEEK_API_KEY", base_url="https://api.deepseek.com")
     r = client.chat.completions.create(
-        model="gpt-4o",
+        model="deepseek-chat",
         messages=[{"role": "user", "content": prompt}]
     )
     return r.choices[0].message.content
