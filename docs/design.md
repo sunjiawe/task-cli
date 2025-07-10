@@ -7,10 +7,10 @@
 我们需要一个命令行项目管理助手，名为 Xixi。核心需求如下：
 
 - **项目初始化**: 能在任意目录通过 `init` 子命令创建项目，并记录项目名称和目标。
-- **数据存储**: 所有项目数据存储在当前路径的 `.xixi` 目录下，类似于 `.git`。
+- **数据存储**: 数据存储路径为当前路径的`.xixi`目录，项目与任务的数据存储在 `.xixi/db.json` 文件中。
 - **交互式终端**: 应用启动后进入一个多轮对话终端，通过 `/` 前缀的子命令与助手交互。
-- **任务拆解**: 核心功能。能将用户的复杂需求拆解为可执行的任务和子任务，并评估难度、工时、截止日期和依赖关系。
 - **任务管理**:
+  - `/decompose`: 核心功能。将用户的复杂需求拆解为可执行的任务和子任务，并评估难度、工时、截止日期和依赖关系。
   - `/list`: 查看任务列表。
   - `/howto`: 获取具体任务的执行建议。
 - **项目洞察**:
@@ -27,12 +27,12 @@
 
 ```mermaid
 graph TD
-    A[用户执行 `xixi init`] --> B{检查 .xixi 是否存在};
+    A[用户执行 `xixi init`] --> B{检查 .xixi/db.json 是否存在};
     B -->|是| C[提示项目已存在并退出];
     B -->|否| D[询问项目名];
     D --> E[询问项目目标];
     E --> F[创建 .xixi 目录];
-    F --> G[生成项目元数据并保存为 .xixi/project.json];
+    F --> G[生成项目元数据并保存为 .xixi/db.json];
     G --> H[提示初始化成功];
 ```
 
@@ -41,7 +41,7 @@ graph TD
 ```mermaid
 graph TD
     subgraph "启动"
-        A[用户执行 `xixi`] --> B{检查 .xixi 是否存在};
+        A[用户执行 `xixi`] --> B{检查 .xixi/db.json 是否存在};
         B -->|否| C[提示需要初始化并退出];
         B -->|是| D[加载项目数据];
     end
@@ -51,29 +51,46 @@ graph TD
         E --> F[等待用户输入];
         F --> G{输入是否为 /subcommand?};
         G -->|是| H[执行对应子命令];
-        G -->|否| I[作为需求输入，进行任务拆解];
+        G -->|否| I[作为需求输入，执行 /decompose];
         H --> E;
         I --> E;
     end
 
     subgraph "子命令"
+        H --> H_decompose[/decompose];
         H --> H_list[/list];
         H --> H_howto[/howto];
         H --> H_report[/report];
         H --> H_qa[/qa];
         H --> H_quit[/quit];
     end
-
+    
     H_quit --> J[退出程序];
+
+    subgraph "LLM 调用流程"
+        subgraph Decompose
+            I --> D_Start
+            D_Start[获取用户需求] --> D_Ctx[准备上下文(项目目标、现有任务)] --> D_LLM[调用 LLM 拆解] --> D_Parse[解析并校验 LLM 响应] --> D_Save[保存新任务到 db.json] --> D_Display[向用户展示新任务]
+        end
+        
+        subgraph Howto
+            H_howto --> HT_Start
+            HT_Start[获取任务ID] --> HT_Ctx[准备上下文(任务详情)] --> HT_LLM[调用 LLM 生成建议] --> HT_Display[向用户展示建议]
+        end
+
+        subgraph QA
+            H_qa --> QA_Start
+            QA_Start[获取用户问题] --> QA_Ctx[准备上下文(项目元数据、所有任务)] --> QA_LLM[调用 LLM 生成回答] --> QA_Display[向用户展示回答]
+        end
+    end
 ```
 
 ## 3. 工具 (Utilities)
 
-- `storage.py`: 封装所有对 `.xixi` 目录的读写操作。
-  - `init_project(name, goal)`: 初始化项目文件结构。
-  - `load_project()`: 加载项目数据。
-  - `save_tasks(tasks)`: 保存任务列表。
-  - `load_tasks()`: 加载任务列表。
+- `storage.py`: 封装所有对 `.xixi/db.json` 的读写操作。
+  - `init_project(name, goal)`: 初始化项目数据库文件。
+  - `load_db()`: 加载整个 JSON 数据库。
+  - `save_db(data)`: 将整个数据对象保存回 JSON 文件。
 - `llm_api.py`: 封装与大语言模型交互的接口。
   - `decompose_requirement(requirement, project_context)`: 拆解需求。
   - `get_task_advice(task, project_context)`: 为任务生成建议。
@@ -83,41 +100,35 @@ graph TD
 
 ## 4. 数据设计 (Data Design)
 
-所有数据以 JSON 格式存储。
-
-### `.xixi/project.json`
-存储项目的基本信息。
+所有数据以 JSON 格式统一存储在 `.xixi/db.json` 文件中。
 
 ```json
 {
-  "project_id": "uuid-v4-string",
-  "project_name": "项目名称",
-  "project_goal": "项目目标",
-  "created_at": "iso-timestamp"
+  "project": {
+    "project_id": "uuid-v4-string",
+    "project_name": "项目名称",
+    "project_goal": "项目目标",
+    "created_at": "iso-timestamp"
+  },
+  "tasks": [
+    {
+      "task_id": "short-unique-id-1",         // 必填
+      "parent_id": "short-unique-id-parent",  // 可为空, 用于表示子任务
+      "title": "任务标题",                      // 必填
+      "description": "任务的详细描述",            // 可为空
+      "status": "todo" | "in_progress" | "done" | "blocked", // 必填
+      "difficulty": 1,                        // 可为空, 1-5
+      "estimated_hours": 8,                   // 可为空
+      "due_date": "YYYY-MM-DD",               // 可为空
+      "dependencies": ["short-unique-id-2"],  // 可为空, 依赖的任务ID列表
+      "checklist": [                          // 可为空
+        { "item": "检查点1", "done": false }
+      ],
+      "created_at": "iso-timestamp",          // 必填
+      "updated_at": "iso-timestamp"           // 必填
+    }
+  ]
 }
-```
-
-### `.xixi/tasks.json`
-存储任务列表。
-
-```json
-[
-  {
-    "task_id": "short-unique-id-1",
-    "title": "任务标题",
-    "description": "任务的详细描述",
-    "status": "todo" | "in_progress" | "done",
-    "difficulty": 1, // 1-5
-    "estimated_hours": 8,
-    "due_date": "YYYY-MM-DD",
-    "dependencies": ["short-unique-id-2"], // 依赖的任务ID列表
-    "sub_tasks": [
-        // 可以在此嵌套子任务结构，或通过 parent_id 关联
-    ],
-    "created_at": "iso-timestamp",
-    "updated_at": "iso-timestamp"
-  }
-]
 ```
 
 ## 5. 节点设计 (Node Design)
@@ -128,10 +139,10 @@ graph TD
   - `exec`: 执行初始化逻辑，与用户交互并调用 `storage.py`。
 - **`ReplNode`**:
   - `exec`: 启动主循环，监听和分发用户命令。
-- **`DecompositionNode`**:
+- **`DecomposeNode`**:
   - `prep`: 收集用户输入的需求和当前项目上下文。
   - `exec`: 调用 `llm_api.decompose_requirement`。
-  - `post`: 将返回的任务存入 `tasks.json` 并展示给用户。
+  - `post`: 将返回的任务存入数据库并展示给用户。
 - **`ListNode`**:
   - `prep`: 调用 `storage.py` 加载任务。
   - `exec`: 调用 `display.py` 格式化任务列表。
@@ -145,9 +156,9 @@ graph TD
 
 1.  **环境搭建**: 创建 `main.py` 作为入口，`requirements.txt` 添加所需依赖（如 `rich` 用于美化终端输出，`questionary` 用于交互式提问）。
 2.  **骨架先行**: 实现 `main.py` 的基本逻辑，包括 `init` 子命令的框架和主循环的启动检查。
-3.  **数据层**: 实现 `utils/storage.py`，完成对 `.xixi` 目录的原子化读写操作。
+3.  **数据层**: 实现 `utils/storage.py`，完成对 `.xixi/db.json` 的原子化读写操作。
 4.  **命令实现**: 逐一实现 `/list`, `/quit` 等简单命令。
-5.  **LLM 集成**: 实现 `utils/llm_api.py`，并完成核心的 `/howto`、任务拆解、`/qa` 和 `/report` 功能。
+5.  **LLM 集成**: 实现 `utils/llm_api.py`，并完成核心的 `/decompose`、`/howto`、`/qa` 和 `/report` 功能。
 6.  **交互优化**: 使用 `rich` 和 `questionary` 优化输入输出体验，例如实现 `/` 的自动补全提示。
 
 ## 7. 示例文件结构
@@ -155,8 +166,7 @@ graph TD
 ```
 xixi-project/
 ├── .xixi/
-│   ├── project.json
-│   └── tasks.json
+│   └── db.json
 ├── main.py           # 应用主入口
 ├── cli.py            # Click 或 Argparse 的命令定义
 ├── commands/
