@@ -1,5 +1,6 @@
 import json
 import yaml
+from datetime import datetime
 from utils.call_llm import call_llm
 from utils.storage import get_config
 
@@ -9,10 +10,12 @@ def decompose_requirement(requirement: str, project_context: dict) -> list:
     """
     config = get_config()
     language = config.get("language", "en")
+    current_date = datetime.now().strftime("%Y-%m-%d")
     prompt = f"""
 # Role: AI Project Manager
 
 ## Context
+- Current Date: {current_date}
 - Language: {language}
 - Project Name: {project_context['project']['project_name']}
 - Project Goal: {project_context['project']['project_goal']}
@@ -66,10 +69,12 @@ def get_task_advice(task: dict, project_context: dict) -> str:
     """
     config = get_config()
     language = config.get("language", "en")
+    current_date = datetime.now().strftime("%Y-%m-%d")
     prompt = f"""
 # Role: AI Tech Lead
 
 ## Context
+- Current Date: {current_date}
 - Language: {language}
 - Project Name: {project_context['project']['project_name']}
 - Project Goal: {project_context['project']['project_goal']}
@@ -90,10 +95,12 @@ def generate_report(project_context: dict) -> str:
     """
     config = get_config()
     language = config.get("language", "en")
+    current_date = datetime.now().strftime("%Y-%m-%d")
     prompt = f"""
 # Role: AI Project Manager
 
 ## Context
+- Current Date: {current_date}
 - Language: {language}
 - Project Data: {json.dumps(project_context, indent=2)}
 
@@ -116,10 +123,12 @@ def answer_question(question: str, project_context: dict) -> str:
     """
     config = get_config()
     language = config.get("language", "en")
+    current_date = datetime.now().strftime("%Y-%m-%d")
     prompt = f"""
 # Role: AI Project Assistant
 
 ## Context
+- Current Date: {current_date}
 - Language: {language}
 - Project Data: {json.dumps(project_context, indent=2)}
 
