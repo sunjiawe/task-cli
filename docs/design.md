@@ -17,7 +17,7 @@
   - `/report`: 生成标准化的项目报告。
   - `/qa`: 基于项目数据，智能回答用户提问。
 - **程序控制**:
-  - `/quit`: 退出应用。
+  - `/exit`: 退出应用。
 
 ## 2. 流程设计 (Flow Design)
 
@@ -62,10 +62,10 @@ graph TD
         H --> H_howto[/howto];
         H --> H_report[/report];
         H --> H_qa[/qa];
-        H --> H_quit[/quit];
+        H --> H_exit[/exit];
     end
     
-    H_quit --> J[退出程序];
+    H_exit --> J[退出程序];
 
     subgraph "LLM 调用流程 (已优化)"
         subgraph Decompose
@@ -160,7 +160,7 @@ graph TD
 1.  **环境搭建**: 创建 `main.py` 作为入口，`requirements.txt` 添加所需依赖（如 `rich` 用于美化终端输出，`questionary` 用于交互式提问）。
 2.  **骨架先行**: 实现 `main.py` 的基本逻辑，包括 `init` 子命令的框架和主循环的启动检查。
 3.  **数据层**: 实现 `utils/storage.py`，完成对 `.xixi/db.json` 的原子化读写操作。
-4.  **命令实现**: 逐一实现 `/list`, `/quit` 等简单命令。
+4.  **命令实现**: 逐一实现 `/list`, `/exit` 等简单命令。
 5.  **LLM 集成**: 实现 `utils/llm_api.py`，并完成核心的 `/decompose`、`/howto`、`/qa` 和 `/report` 功能。
 6.  **交互优化**: 使用 `rich` 和 `questionary` 优化输入输出体验，例如实现 `/` 的自动补全提示。
 

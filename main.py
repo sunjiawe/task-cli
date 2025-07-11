@@ -18,7 +18,7 @@ SUBCOMMANDS = {
     "/qa": "Ask a question about the project.",
     "/update": "Update the status of a task.",
     "/help": "Show this help message.",
-    "/quit": "Exit the application.",
+    "/exit": "Exit the application.",
 }
 
 command_completer = WordCompleter(list(SUBCOMMANDS.keys()), ignore_case=True)
@@ -148,7 +148,7 @@ def main_repl():
 
             command = user_input.lower().split()[0]
 
-            if command == '/quit':
+            if command == '/exit':
                 break
             elif command == '/list':
                 handle_list()
