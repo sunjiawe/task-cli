@@ -3,13 +3,23 @@ import sys
 import questionary
 from rich.console import Console
 from questionary.prompts.autocomplete import WordCompleter
-from utils.storage import init_project, load_db, query_tasks, save_db
-from utils.display import display_tasks
-from utils.llm_api import decompose_requirement, get_task_advice, generate_report, answer_question
+
+# Import command handlers
+from commands.init import handle_init
+from commands.list import handle_list
+from commands.decompose import handle_decompose
+from commands.howto import handle_howto
+from commands.report import handle_report
+from commands.qa import handle_qa
+from commands.update import handle_update
+from commands.help import handle_help
+
+# Import utilities
+from utils.storage import query_tasks
 
 console = Console()
 
-# Define subcommands
+# Define subcommands and their descriptions
 SUBCOMMANDS = {
     "/list": "List all tasks.",
     "/decompose": "Decompose a requirement into new tasks.",
@@ -22,110 +32,6 @@ SUBCOMMANDS = {
 }
 
 command_completer = WordCompleter(list(SUBCOMMANDS.keys()), ignore_case=True)
-
-def handle_init():
-    """Handles the 'init' command."""
-    if os.path.exists(".xixi/db.json"):
-        console.print("[yellow]Project already initialized.[/yellow]")
-        return
-
-    project_name = questionary.text("Enter project name:").ask()
-    project_goal = questionary.text("Enter project goal:").ask()
-
-    if not project_name or not project_goal:
-        console.print("[red]Project name and goal cannot be empty.[/red]")
-        return
-
-    init_project(project_name, project_goal)
-    console.print("[green]Project initialized successfully![/green]")
-
-def handle_list():
-    """Handles the '/list' command."""
-    tasks = query_tasks()
-    display_tasks(tasks)
-
-def handle_decompose(requirement):
-    """Handles the '/decompose' command."""
-    console.print(f"[cyan]Decomposing requirement: {requirement}...[/cyan]")
-    db_data = load_db()
-    project_context = db_data
-    new_tasks = decompose_requirement(requirement, project_context)
-    if new_tasks:
-        db_data["tasks"].extend(new_tasks)
-        save_db(db_data)
-        console.print("[green]New tasks added:[/green]")
-        display_tasks(new_tasks)
-    else:
-        console.print("[yellow]No new tasks were generated.[/yellow]")
-
-def handle_howto(task_id):
-    """Handles the '/howto' command."""
-    if not task_id:
-        console.print("[red]Task ID is required for /howto command.[/red]")
-        return
-    db_data = load_db()
-    tasks = db_data.get("tasks", [])
-    task = next((t for t in tasks if t.get("task_id") == task_id), None)
-
-    if not task:
-        console.print(f"[red]Task with ID '{task_id}' not found.[/red]")
-        return
-
-    console.print(f"[cyan]Generating advice for task: {task.get('title')}...[/cyan]")
-    project_context = db_data
-    advice = get_task_advice(task, project_context)
-    console.print(f"[bold green]Advice:[/bold green]\n{advice}")
-
-def handle_report():
-    """Handles the '/report' command."""
-    console.print("[cyan]Generating project report...[/cyan]")
-    db_data = load_db()
-    project_context = {
-        "project": db_data.get("project"),
-        "tasks": db_data.get("tasks", [])
-    }
-    report = generate_report(project_context)
-    console.print(f"[bold green]Project Report:[/bold green]\n{report}")
-
-def handle_qa(question):
-    """Handles the '/qa' command."""
-    console.print(f"[cyan]Answering question: {question}...[/cyan]")
-    db_data = load_db()
-    project_context = {
-        "project": db_data.get("project"),
-        "tasks": query_tasks(status=['todo', 'in_progress', 'blocked']) # Default context
-    }
-    answer = answer_question(question, project_context)
-    console.print(f"[bold green]Answer:[/bold green]\n{answer}")
-
-def handle_update(task_id, status):
-    """Handles the '/update' command."""
-    if not task_id or not status:
-        console.print("[red]Task ID and status are required for /update command.[/red]")
-        return
-
-    db_data = load_db()
-    tasks = db_data.get("tasks", [])
-    task = next((t for t in tasks if t.get("task_id") == task_id), None)
-
-    if not task:
-        console.print(f"[red]Task with ID '{task_id}' not found.[/red]")
-        return
-
-    if status not in ['todo', 'in_progress', 'done', 'blocked']:
-        console.print(f"[red]Invalid status: {status}. Choose from 'todo', 'in_progress', 'done', 'blocked'.[/red]")
-        return
-
-    task['status'] = status
-    save_db(db_data)
-    console.print(f"[green]Task '{task_id}' status updated to '{status}'.[/green]")
-
-def handle_help():
-    """Displays the help message."""
-    console.print("\n[bold]Available commands:[/bold]")
-    for cmd, desc in SUBCOMMANDS.items():
-        console.print(f"  [cyan]{cmd}[/cyan]: {desc}")
-    console.print("\nType any other text to start decomposing a new requirement.\n")
 
 def main_repl():
     """Main Read-Eval-Print Loop."""
@@ -142,43 +48,36 @@ def main_repl():
             if not user_input:
                 continue
 
-            if user_input == "/":
-                handle_help()
-                continue
-
-            command = user_input.lower().split()[0]
-
-            if command == '/exit':
+            if user_input.lower().strip() == '/exit':
                 break
-            elif command == '/list':
+
+            parts = user_input.split(maxsplit=1)
+            command = parts[0].lower()
+            args = parts[1] if len(parts) > 1 else ""
+
+            if command == '/list':
                 handle_list()
             elif command == '/decompose':
-                parts = user_input.split(maxsplit=1)
-                requirement = parts[1] if len(parts) > 1 else ""
-                if not requirement:
-                    requirement = questionary.text("What is the requirement to decompose?").ask()
-                if requirement:
-                    handle_decompose(requirement)
+                if not args:
+                    args = questionary.text("What is the requirement to decompose?").ask()
+                if args:
+                    handle_decompose(args)
             elif command == '/howto':
-                parts = user_input.split(maxsplit=1)
-                task_id = parts[1] if len(parts) > 1 else ""
-                if not task_id:
-                    task_id = questionary.text("Enter the task ID for which you need advice:").ask()
-                if task_id:
-                    handle_howto(task_id)
+                if not args:
+                    args = questionary.text("Enter the task ID for which you need advice:").ask()
+                if args:
+                    handle_howto(args)
             elif command == '/report':
                 handle_report()
             elif command == '/qa':
-                parts = user_input.split(maxsplit=1)
-                question = parts[1] if len(parts) > 1 else ""
-                if not question:
-                    question = questionary.text("What is your question?").ask()
-                if question:
-                    handle_qa(question)
+                if not args:
+                    args = questionary.text("What is your question?").ask()
+                if args:
+                    handle_qa(args)
             elif command == '/update':
-                parts = user_input.split(maxsplit=2)
-                task_id = parts[1] if len(parts) > 1 else ""
-                status = parts[2] if len(parts) > 2 else ""
+                update_parts = user_input.split(maxsplit=2)
+                task_id = update_parts[1] if len(update_parts) > 1 else ""
+                status = update_parts[2] if len(update_parts) > 2 else ""
 
                 if not task_id:
                     tasks = query_tasks()
@@ -199,13 +98,15 @@ def main_repl():
                 
                 if task_id and status:
                     handle_update(task_id, status)
-            elif command == '/help':
-                handle_help()
-            elif user_input.startswith('/'):
-                console.print(f"[yellow]Unknown command: {user_input}. Type /help for available commands.[/yellow]")
+            elif command == '/help' or user_input == '/':
+                handle_help(SUBCOMMANDS)
+            elif command.startswith('/'):
+                console.print(f"[yellow]Unknown command: {command}. Type /help for available commands.[/yellow]")
             else:
+                # Default action is to decompose the input as a requirement
                 handle_decompose(user_input)
-        except KeyboardInterrupt:
+
+        except (KeyboardInterrupt, EOFError):
             break
 
     console.print("[bold yellow]Goodbye![/bold yellow]")

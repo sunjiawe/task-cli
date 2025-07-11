@@ -9,7 +9,6 @@ def decompose_requirement(requirement: str, project_context: dict) -> list:
     """
     config = get_config()
     language = config.get("language", "en")
-    print(f"prompt project_context: {project_context}")
     prompt = f"""
 # Role: AI Project Manager
 
@@ -25,7 +24,7 @@ Decompose the following user requirement into a list of actionable tasks.
 Requirement: "{requirement}"
 
 ## Rules
-- Output must be a valid JSON list of task objects.
+- Output must be a valid YAML list of task objects.
 - Each task must have `task_id`, `title`, `status` ('todo'), and `created_at`.
 - Infer `description`, `difficulty` (1-5), `estimated_hours`, `due_date`, and `dependencies` where possible.
 - `parent_id` should be used for sub-tasks.
@@ -35,34 +34,30 @@ Requirement: "{requirement}"
 - If the requirement is a question or cannot be decomposed, return an empty list.
 
 ## Output Format
-```json
-[
-  {{
-    "task_id": "example-task-1",
-    "parent_id": null,
-    "title": "Example Task 1",
-    "description": "An example task.",
-    "status": "todo",
-    "difficulty": 2,
-    "estimated_hours": 4,
-    "due_date": "YYYY-MM-DD",
-    "dependencies": [],
-    "created_at": "iso-timestamp",
-    "updated_at": "iso-timestamp"
-  }}
-]
+```yaml
+- task_id: "example-task-1"
+  parent_id: null
+  title: "Example Task 1"
+  description: "An example task."
+  status: "todo"
+  difficulty: 2
+  estimated_hours: 4
+  due_date: "YYYY-MM-DD"
+  dependencies: []
+  created_at: "iso-timestamp"
+  updated_at: "iso-timestamp"
 ```
 """
     response = call_llm(prompt)
     try:
-        # Extract JSON from the response
-        json_str = response.strip().split('```json')[1].split('```')[0]
-        tasks = json.loads(json_str)
+        # Extract YAML from the response
+        yaml_str = response.strip().split('```yaml')[1].split('```')[0]
+        tasks = yaml.safe_load(yaml_str)
         # Basic validation
         if isinstance(tasks, list):
             return tasks
         return []
-    except (json.JSONDecodeError, IndexError):
+    except (yaml.YAMLError, IndexError):
         return []
 
 def get_task_advice(task: dict, project_context: dict) -> str:

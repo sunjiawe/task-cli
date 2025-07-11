@@ -3,14 +3,16 @@ import os
 import uuid
 from datetime import datetime
 
-DB_FILE = ".xixi/db.json"
-CONFIG_FILE = ".xixi/config.json"
+# Define constants for directories and files
+DB_DIR = ".xixi"
+DB_FILE = os.path.join(DB_DIR, "db.json")
+CONFIG_FILE = os.path.join(DB_DIR, "config.json")
 
 def init_project(name, goal):
     """
     Initializes the project database and config file.
     """
-    os.makedirs(".xixi", exist_ok=True)
+    os.makedirs(DB_DIR, exist_ok=True)
 
     # Initialize database
     project_id = str(uuid.uuid4())
