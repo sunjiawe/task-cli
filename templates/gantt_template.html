@@ -4,183 +4,63 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ project_name }} Gantt Chart</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background-color: #f8f9fa;
-            color: #212529;
-            margin: 0;
-            padding: 20px;
-        }
-        .container {
-            max-width: 95%;
-            margin: auto;
-            background: #fff;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
-        }
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        h1 {
-            color: #343a40;
-            margin: 0;
-        }
-        .view-switcher button {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        .view-switcher button.active {
-            background-color: #0056b3;
-        }
-        .gantt-wrapper {
-            overflow-x: auto;
-        }
         .gantt-chart {
-            display: grid;
-            grid-template-columns: 200px 1fr;
-            position: relative;
-        }
-        .gantt-tasks {
-            display: flex;
-            flex-direction: column;
-            border-right: 1px solid #dee2e6;
-        }
-        .gantt-task-name {
-            padding: 12px 10px;
-            font-weight: 500;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            border-bottom: 1px solid #e9ecef;
-            height: 30px;
-            line-height: 30px;
-        }
-        .gantt-timeline {
-            position: relative;
-        }
-        .gantt-header {
-            display: grid;
-            border-bottom: 2px solid #ced4da;
-        }
-        .gantt-header-unit {
-            text-align: center;
-            font-size: 12px;
-            color: #6c757d;
-            padding: 5px 0;
-            border-right: 1px solid #e9ecef;
-        }
-        .gantt-row {
-            height: 53px; /* Match task name height + padding/border */
-            position: relative;
-            border-bottom: 1px solid #e9ecef;
-        }
-        .gantt-bar {
-            position: absolute;
-            top: 10px;
-            height: 30px;
-            background-color: #007bff;
-            border-radius: 5px;
-            z-index: 1;
-            transition: filter 0.2s;
-        }
-        .gantt-bar.done { background-color: #28a745; }
-        .gantt-bar.in_progress { background-color: #ffc107; }
-        .gantt-bar.blocked { background-color: #dc3545; }
-        .gantt-bar.highlight {
-            filter: brightness(1.2);
-        }
-        .gantt-bar.dimmed {
-            filter: brightness(0.7);
-        }
-        .dependency-lines {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 2;
-        }
-        .dependency-line {
-            transition: stroke-width 0.2s, stroke 0.2s;
-        }
-        .dependency-line.highlight {
-            stroke: #d63384 !important;
-            stroke-width: 2.5 !important;
-        }
-        #tooltip {
-            position: fixed;
-            display: none;
-            background: #343a40;
-            color: white;
-            padding: 10px 15px;
-            border-radius: 5px;
-            font-size: 14px;
-            pointer-events: none;
-            z-index: 100;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-        #tooltip h3 {
-            margin: 0 0 5px 0;
-            font-size: 16px;
-        }
-        #tooltip p {
-            margin: 0;
+            grid-template-columns: 250px 1fr;
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>{{ project_name }} Gantt Chart</h1>
-            <div class="view-switcher">
-                <button id="day-view" class="active">Day</button>
-                <button id="week-view">Week</button>
-                <button id="month-view">Month</button>
+<body class="bg-gray-100 text-gray-800 font-sans">
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <div class="flex justify-between items-center mb-4">
+                <h1 class="text-2xl font-bold text-gray-900">{{ project_name }} Gantt Chart</h1>
+                <div class="flex space-x-2">
+                    <button id="day-view" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Day</button>
+                    <button id="week-view" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">Week</button>
+                    <button id="month-view" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">Month</button>
+                </div>
             </div>
-        </div>
-        <div class="gantt-wrapper">
-            <div class="gantt-chart" id="gantt-chart">
-                <div class="gantt-tasks" id="gantt-tasks"></div>
-                <div class="gantt-timeline">
-                    <div class="gantt-header" id="gantt-header"></div>
-                    <div class="gantt-rows" id="gantt-rows"></div>
-                    <svg class="dependency-lines" id="dependency-lines">
-                        <defs>
-                            <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
-                                <polygon points="0 0, 10 3.5, 0 7" fill="#5a6268" />
-                            </marker>
-                            <marker id="arrowhead-highlight" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
-                                <polygon points="0 0, 10 3.5, 0 7" fill="#d63384" />
-                            </marker>
-                        </defs>
-                    </svg>
+            <div class="overflow-x-auto">
+                <div class="gantt-chart grid">
+                    <div class="gantt-tasks border-r border-gray-200">
+                        <!-- Task names will be injected here -->
+                    </div>
+                    <div class="gantt-timeline relative">
+                        <div class="gantt-header grid border-b-2 border-gray-300">
+                            <!-- Timeline headers will be injected here -->
+                        </div>
+                        <div class="gantt-rows relative">
+                            <!-- Task bars will be injected here -->
+                        </div>
+                        <svg class="dependency-lines absolute top-0 left-0 w-full h-full pointer-events-none z-10">
+                            <defs>
+                                <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+                                    <polygon points="0 0, 10 3.5, 0 7" class="fill-gray-500" />
+                                </marker>
+                                <marker id="arrowhead-highlight" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+                                    <polygon points="0 0, 10 3.5, 0 7" class="fill-pink-500" />
+                                </marker>
+                            </defs>
+                            <!-- Dependency lines will be injected here -->
+                        </svg>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-    <div id="tooltip"></div>
+    <div id="tooltip" class="fixed hidden bg-gray-800 text-white p-3 rounded-md text-sm shadow-lg z-50"></div>
 
     <script>
         const tasks = {{ tasks_json }};
         const minDate = new Date('{{ min_date }}');
         const maxDate = new Date('{{ max_date }}');
 
-        const ganttChart = document.getElementById('gantt-chart');
-        const ganttTasks = document.getElementById('gantt-tasks');
-        const ganttHeader = document.getElementById('gantt-header');
-        const ganttRows = document.getElementById('gantt-rows');
-        const dependencyLines = document.getElementById('dependency-lines');
+        const ganttTasks = document.querySelector('.gantt-tasks');
+        const ganttHeader = document.querySelector('.gantt-header');
+        const ganttRows = document.querySelector('.gantt-rows');
+        const dependencyLines = document.querySelector('.dependency-lines');
         const tooltip = document.getElementById('tooltip');
 
         let currentView = 'day';
@@ -196,20 +76,20 @@
 
             timeScale.units.forEach(unit => {
                 const headerEl = document.createElement('div');
-                headerEl.className = 'gantt-header-unit';
+                headerEl.className = 'text-center text-xs text-gray-600 py-2 border-r border-gray-200';
                 headerEl.textContent = unit;
                 ganttHeader.appendChild(headerEl);
             });
 
             tasks.forEach(task => {
                 const taskEl = document.createElement('div');
-                taskEl.className = 'gantt-task-name';
+                taskEl.className = 'p-3 font-medium whitespace-nowrap overflow-hidden text-ellipsis border-b border-gray-200 h-14 leading-8';
                 taskEl.textContent = task.title;
                 taskEl.id = `task-name-${task.id}`;
                 ganttTasks.appendChild(taskEl);
 
                 const rowEl = document.createElement('div');
-                rowEl.className = 'gantt-row';
+                rowEl.className = 'relative h-14 border-b border-gray-200';
                 rowEl.id = `task-row-${task.id}`;
                 ganttRows.appendChild(rowEl);
 
@@ -219,7 +99,13 @@
                 const duration = getOffset(end, start, timeScale.unitDuration) + 1;
 
                 const barEl = document.createElement('div');
-                barEl.className = `gantt-bar ${task.status}`;
+                const statusClasses = {
+                    done: 'bg-green-500',
+                    in_progress: 'bg-yellow-500',
+                    blocked: 'bg-red-500',
+                    todo: 'bg-blue-500'
+                };
+                                barEl.className = `gantt-bar absolute top-2 h-10 ${statusClasses[task.status] || 'bg-blue-500'} rounded-md z-20 transition-all duration-200`;
                 barEl.style.left = `${(startOffset / timeScale.units.length) * 100}%`;
                 barEl.style.width = `${(duration / timeScale.units.length) * 100}%`;
                 barEl.id = `task-bar-${task.id}`;
@@ -229,6 +115,7 @@
 
             drawDependencies();
             addHoverEffects();
+            updateViewButtons();
         }
 
         function getTimeScale(view) {
@@ -248,11 +135,11 @@
                 startDate.setDate(startDate.getDate() - startDate.getDay());
                 let currentDate = new Date(startDate);
                 while(currentDate <= maxDate) {
-                    units.push(`Week of ${currentDate.getMonth() + 1}/${currentDate.getDate()}`);
+                    units.push(`Wk ${currentDate.getMonth() + 1}/${currentDate.getDate()}`);
                     currentDate.setDate(currentDate.getDate() + 7);
                 }
             } else { // month
-                unitDuration = 1000 * 60 * 60 * 24 * 30.44; // Average days
+                unitDuration = 1000 * 60 * 60 * 24 * 30.44;
                 startDate.setDate(1);
                 let currentDate = new Date(startDate);
                 while(currentDate.getFullYear() < maxDate.getFullYear() || currentDate.getMonth() <= maxDate.getMonth()) {
@@ -280,16 +167,16 @@
 
                             const startX = fromRect.right - containerRect.left;
                             const startY = fromRect.top - containerRect.top + fromRect.height / 2;
-                            const endX = toRect.left - containerRect.left - 10; // Adjust for arrowhead
+                            const endX = toRect.left - containerRect.left - 10;
                             const endY = toRect.top - containerRect.top + toRect.height / 2;
 
                             const line = document.createElementNS('http://www.w3.org/2000/svg', 'path');
                             line.setAttribute('d', `M ${startX} ${startY} L ${startX + 20} ${startY} L ${startX + 20} ${endY} L ${endX} ${endY}`);
-                            line.setAttribute('stroke', '#5a6268');
+                            line.setAttribute('stroke', 'rgb(107 114 128)');
                             line.setAttribute('stroke-width', '1.5');
                             line.setAttribute('fill', 'none');
                             line.setAttribute('marker-end', 'url(#arrowhead)');
-                            line.classList.add('dependency-line');
+                            line.classList.add('dependency-line', 'transition-all', 'duration-200');
                             line.dataset.fromTask = depId;
                             line.dataset.toTask = task.id;
                             dependencyLines.appendChild(line);
@@ -305,13 +192,11 @@
                     const taskId = e.target.dataset.taskId;
                     const task = tasks.find(t => t.id === taskId);
 
-                    // Tooltip
-                    tooltip.style.display = 'block';
-                    tooltip.innerHTML = `<h3>${task.title}</h3><p>${task.description}</p><p><b>Difficulty:</b> ${task.difficulty} | <b>Hours:</b> ${task.estimated_hours}</p>`;
+                                        tooltip.classList.remove('hidden');
+                    tooltip.innerHTML = `<h3 class="font-bold text-lg mb-1">${task.title}</h3><p class="text-gray-300">${task.description}</p><p class="mt-2"><b>Difficulty:</b> ${task.difficulty} | <b>Hours:</b> ${task.estimated_hours}</p>`;
 
-                    // Highlighting
-                    document.querySelectorAll('.gantt-bar').forEach(b => b.classList.add('dimmed'));
-                    document.querySelectorAll('.dependency-line').forEach(l => l.style.opacity = '0.2');
+                    document.querySelectorAll('.gantt-bar').forEach(b => b.classList.add('opacity-50'));
+                    document.querySelectorAll('.dependency-line').forEach(l => l.classList.add('opacity-20'));
 
                     const relatedIds = new Set([taskId]);
                     tasks.forEach(t => {
@@ -320,26 +205,31 @@
                     });
 
                     relatedIds.forEach(id => {
-                        document.getElementById(`task-bar-${id}`).classList.remove('dimmed');
-                        document.getElementById(`task-bar-${id}`).classList.add('highlight');
+                        const el = document.getElementById(`task-bar-${id}`);
+                        if (el) {
+                            el.classList.remove('opacity-50');
+                            el.classList.add('scale-105');
+                        }
                     });
 
                     document.querySelectorAll(`.dependency-line[data-from-task="${taskId}"], .dependency-line[data-to-task="${taskId}"]`).forEach(l => {
-                        l.classList.add('highlight');
+                        l.classList.remove('opacity-20');
+                        l.setAttribute('stroke', 'rgb(236 72 153)');
+                        l.setAttribute('stroke-width', '2.5');
                         l.setAttribute('marker-end', 'url(#arrowhead-highlight)');
-                        l.style.opacity = '1';
                     });
                 });
 
                 bar.addEventListener('mouseout', () => {
-                    tooltip.style.display = 'none';
+                                        tooltip.classList.add('hidden');
                     document.querySelectorAll('.gantt-bar').forEach(b => {
-                        b.classList.remove('dimmed', 'highlight');
+                        b.classList.remove('opacity-50', 'scale-105');
                     });
                     document.querySelectorAll('.dependency-line').forEach(l => {
-                        l.classList.remove('highlight');
+                        l.classList.remove('opacity-20');
+                        l.setAttribute('stroke', 'rgb(107 114 128)');
+                        l.setAttribute('stroke-width', '1.5');
                         l.setAttribute('marker-end', 'url(#arrowhead)');
-                        l.style.opacity = '1';
                     });
                 });
 
@@ -347,6 +237,18 @@
                     tooltip.style.left = `${e.clientX + 15}px`;
                     tooltip.style.top = `${e.clientY + 15}px`;
                 });
+            });
+        }
+
+        function updateViewButtons() {
+            document.querySelectorAll('.view-switcher button').forEach(button => {
+                if (button.id === `${currentView}-view`) {
+                    button.classList.remove('bg-gray-200', 'text-gray-700');
+                    button.classList.add('bg-blue-600', 'text-white');
+                } else {
+                    button.classList.remove('bg-blue-600', 'text-white');
+                    button.classList.add('bg-gray-200', 'text-gray-700');
+                }
             });
         }
 
