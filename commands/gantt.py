@@ -28,11 +28,17 @@ def handle_gantt():
                 if due_date < start_date:
                     due_date = start_date
 
+                # Pass more task details for the tooltip
                 tasks_with_dates.append({
-                    "title": task["title"],
+                    "id": task.get("task_id"),
+                    "title": task.get("title"),
+                    "description": task.get("description", "No description."),
                     "start": start_date.isoformat(),
                     "end": due_date.isoformat(),
                     "status": task.get("status", "todo"),
+                    "difficulty": task.get("difficulty", "N/A"),
+                    "estimated_hours": task.get("estimated_hours", "N/A"),
+                    "dependencies": task.get("dependencies", [])
                 })
             except (ValueError, TypeError):
                 continue
@@ -43,7 +49,6 @@ def handle_gantt():
 
     min_date = min(datetime.fromisoformat(t["start"]) for t in tasks_with_dates).date()
     max_date = max(datetime.fromisoformat(t["end"]) for t in tasks_with_dates).date()
-    total_days = (max_date - min_date).days + 1
 
     # Load the template
     try:
@@ -58,7 +63,6 @@ def handle_gantt():
     rendered_html = rendered_html.replace("{{ tasks_json }}", json.dumps(tasks_with_dates))
     rendered_html = rendered_html.replace("{{ min_date }}", min_date.isoformat())
     rendered_html = rendered_html.replace("{{ max_date }}", max_date.isoformat())
-    rendered_html = rendered_html.replace("{{ total_days }}", str(total_days))
 
     # Save the rendered HTML
     output_path = "gantt.html"
