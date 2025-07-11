@@ -13,6 +13,7 @@ from commands.report import handle_report
 from commands.qa import handle_qa
 from commands.update import handle_update
 from commands.help import handle_help
+from commands.gantt import handle_gantt
 
 # Import utilities
 from utils.storage import query_tasks
@@ -22,6 +23,7 @@ console = Console()
 # Define subcommands and their descriptions
 SUBCOMMANDS = {
     "/list": "List all tasks.",
+    "/gantt": "Display a Gantt chart of the project.",
     "/decompose": "Decompose a requirement into new tasks.",
     "/howto": "Get advice on how to perform a specific task.",
     "/report": "Generate a project report.",
@@ -57,6 +59,8 @@ def main_repl():
 
             if command == '/list':
                 handle_list()
+            elif command == '/gantt':
+                handle_gantt()
             elif command == '/decompose':
                 if not args:
                     args = questionary.text("What is the requirement to decompose?").ask()

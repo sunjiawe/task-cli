@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ project_name }} Gantt Chart</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f4f7fa;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+        }
+        .gantt-chart {
+            display: grid;
+            grid-template-columns: 150px 1fr;
+            gap: 10px;
+            border-left: 2px solid #e0e0e0;
+            padding-left: 10px;
+        }
+        .gantt-header, .gantt-row {
+            display: contents;
+        }
+        .gantt-task-name {
+            padding: 10px;
+            font-weight: bold;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .gantt-bars {
+            display: grid;
+            grid-template-columns: repeat({{ total_days }}, 1fr);
+            position: relative;
+        }
+        .gantt-bar {
+            grid-column: var(--start) / span var(--duration);
+            background-color: #3498db;
+            border-radius: 4px;
+            margin: 5px 0;
+            height: 20px;
+            position: relative;
+        }
+        .gantt-bar.done { background-color: #2ecc71; }
+        .gantt-bar.in_progress { background-color: #f1c40f; }
+        .gantt-bar.blocked { background-color: #e74c3c; }
+
+        .gantt-bar-label {
+            position: absolute;
+            left: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: white;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+        .gantt-header .gantt-bars {
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 5px;
+        }
+        .gantt-date {
+            text-align: center;
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>{{ project_name }} Gantt Chart</h1>
+        <div class="gantt-chart" id="gantt-chart">
+            <!-- Header -->
+            <div class="gantt-header">
+                <div class="gantt-task-name">Task</div>
+                <div class="gantt-bars" id="gantt-header-dates">
+                    <!-- Dates will be injected here -->
+                </div>
+            </div>
+            <!-- Task rows will be injected here -->
+        </div>
+    </div>
+
+    <script>
+        const tasks = {{ tasks_json }};
+        const minDate = new Date('{{ min_date }}');
+        const maxDate = new Date('{{ max_date }}');
+        const totalDays = Math.round((maxDate - minDate) / (1000 * 60 * 60 * 24)) + 1;
+
+        const chart = document.getElementById('gantt-chart');
+        const headerDates = document.getElementById('gantt-header-dates');
+
+        // Populate header with dates
+        headerDates.style.gridTemplateColumns = `repeat(${totalDays}, 1fr)`;
+        for (let i = 0; i < totalDays; i++) {
+            const date = new Date(minDate);
+            date.setDate(minDate.getDate() + i);
+            const dateEl = document.createElement('div');
+            dateEl.className = 'gantt-date';
+            dateEl.textContent = `${date.getMonth() + 1}-${date.getDate()}`;
+            headerDates.appendChild(dateEl);
+        }
+
+        // Populate tasks
+        tasks.forEach(task => {
+            const start = new Date(task.start);
+            const end = new Date(task.end);
+            const startOffset = Math.round((start - minDate) / (1000 * 60 * 60 * 24)) + 1;
+            const duration = Math.round((end - start) / (1000 * 60 * 60 * 24)) + 1;
+
+            const row = document.createElement('div');
+            row.className = 'gantt-row';
+
+            const nameEl = document.createElement('div');
+            nameEl.className = 'gantt-task-name';
+            nameEl.textContent = task.title;
+            row.appendChild(nameEl);
+
+            const barsEl = document.createElement('div');
+            barsEl.className = 'gantt-bars';
+            barsEl.style.gridTemplateColumns = `repeat(${totalDays}, 1fr)`;
+
+            const barEl = document.createElement('div');
+            barEl.className = `gantt-bar ${task.status}`;
+            barEl.style.setProperty('--start', startOffset);
+            barEl.style.setProperty('--duration', duration);
+
+            barsEl.appendChild(barEl);
+            row.appendChild(barsEl);
+            chart.appendChild(row);
+        });
+    </script>
+</body>
+</html>
