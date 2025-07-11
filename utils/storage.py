@@ -4,15 +4,18 @@ import uuid
 from datetime import datetime
 
 DB_FILE = ".xixi/db.json"
+CONFIG_FILE = ".xixi/config.json"
 
 def init_project(name, goal):
     """
-    Initializes the project database file.
+    Initializes the project database and config file.
     """
     os.makedirs(".xixi", exist_ok=True)
+
+    # Initialize database
     project_id = str(uuid.uuid4())
     created_at = datetime.now().isoformat()
-    data = {
+    db_data = {
         "project": {
             "project_id": project_id,
             "project_name": name,
@@ -21,8 +24,14 @@ def init_project(name, goal):
         },
         "tasks": [],
     }
-    save_db(data)
-    return data
+    save_db(db_data)
+
+    # Initialize config
+    if not os.path.exists(CONFIG_FILE):
+        config_data = {"language": "en"}
+        save_config(config_data)
+
+    return db_data
 
 def load_db():
     """
@@ -30,14 +39,36 @@ def load_db():
     """
     if not os.path.exists(DB_FILE):
         return None
-    with open(DB_FILE, "r", encoding="utf-8") as f:
-        return json.load(f)
+    try:
+        with open(DB_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return None
 
 def save_db(data):
     """
     Saves the entire data object back to the JSON file.
     """
     with open(DB_FILE, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+
+def get_config():
+    """
+    Loads the config file.
+    """
+    if not os.path.exists(CONFIG_FILE):
+        return {}
+    try:
+        with open(CONFIG_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {}
+
+def save_config(data):
+    """
+    Saves the config data back to the JSON file.
+    """
+    with open(CONFIG_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
 
 def query_tasks(status=None, overdue=None):

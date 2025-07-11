@@ -1,16 +1,20 @@
 import json
 import yaml
 from utils.call_llm import call_llm
+from utils.storage import get_config
 
 def decompose_requirement(requirement: str, project_context: dict) -> list:
     """
     Decomposes a user's requirement into a list of tasks.
     """
+    config = get_config()
+    language = config.get("language", "en")
     print(f"prompt project_context: {project_context}")
     prompt = f"""
 # Role: AI Project Manager
 
 ## Context
+- Language: {language}
 - Project Name: {project_context['project']['project_name']}
 - Project Goal: {project_context['project']['project_goal']}
 - Existing Tasks: {json.dumps(project_context['tasks'], indent=2)}
@@ -65,10 +69,13 @@ def get_task_advice(task: dict, project_context: dict) -> str:
     """
     Generates advice on how to approach a specific task.
     """
+    config = get_config()
+    language = config.get("language", "en")
     prompt = f"""
 # Role: AI Tech Lead
 
 ## Context
+- Language: {language}
 - Project Name: {project_context['project']['project_name']}
 - Project Goal: {project_context['project']['project_goal']}
 - Task to Advise On: {json.dumps(task, indent=2)}
@@ -86,10 +93,13 @@ def generate_report(project_context: dict) -> str:
     """
     Generates a project status report.
     """
+    config = get_config()
+    language = config.get("language", "en")
     prompt = f"""
 # Role: AI Project Manager
 
 ## Context
+- Language: {language}
 - Project Data: {json.dumps(project_context, indent=2)}
 
 ## Request
@@ -109,10 +119,13 @@ def answer_question(question: str, project_context: dict) -> str:
     """
     Answers a user's question based on the project context.
     """
+    config = get_config()
+    language = config.get("language", "en")
     prompt = f"""
 # Role: AI Project Assistant
 
 ## Context
+- Language: {language}
 - Project Data: {json.dumps(project_context, indent=2)}
 
 ## Question
