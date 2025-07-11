@@ -16,6 +16,7 @@ SUBCOMMANDS = {
     "/howto": "Get advice on how to perform a specific task.",
     "/report": "Generate a project report.",
     "/qa": "Ask a question about the project.",
+    "/update": "Update the status of a task.",
     "/help": "Show this help message.",
     "/quit": "Exit the application.",
 }
@@ -97,6 +98,28 @@ def handle_qa(question):
     answer = answer_question(question, project_context)
     console.print(f"[bold green]Answer:[/bold green]\n{answer}")
 
+def handle_update(task_id, status):
+    """Handles the '/update' command."""
+    if not task_id or not status:
+        console.print("[red]Task ID and status are required for /update command.[/red]")
+        return
+
+    db_data = load_db()
+    tasks = db_data.get("tasks", [])
+    task = next((t for t in tasks if t.get("task_id") == task_id), None)
+
+    if not task:
+        console.print(f"[red]Task with ID '{task_id}' not found.[/red]")
+        return
+
+    if status not in ['todo', 'in_progress', 'done', 'blocked']:
+        console.print(f"[red]Invalid status: {status}. Choose from 'todo', 'in_progress', 'done', 'blocked'.[/red]")
+        return
+
+    task['status'] = status
+    save_db(db_data)
+    console.print(f"[green]Task '{task_id}' status updated to '{status}'.[/green]")
+
 def handle_help():
     """Displays the help message."""
     console.print("\n[bold]Available commands:[/bold]")
@@ -152,6 +175,30 @@ def main_repl():
                     question = questionary.text("What is your question?").ask()
                 if question:
                     handle_qa(question)
+            elif command == '/update':
+                parts = user_input.split(maxsplit=2)
+                task_id = parts[1] if len(parts) > 1 else ""
+                status = parts[2] if len(parts) > 2 else ""
+
+                if not task_id:
+                    tasks = query_tasks()
+                    task_choices = [f"{t['task_id']}: {t['title']}" for t in tasks if t.get('task_id') and t.get('title')]
+                    if not task_choices:
+                        console.print("[yellow]No tasks to update.[/yellow]")
+                        continue
+                    selected_task_str = questionary.select("Which task to update?", choices=task_choices).ask()
+                    if not selected_task_str:
+                        continue
+                    task_id = selected_task_str.split(":")[0]
+
+                if not status:
+                    status = questionary.select(
+                        f"New status for task '{task_id}':",
+                        choices=['todo', 'in_progress', 'done', 'blocked'],
+                    ).ask()
+                
+                if task_id and status:
+                    handle_update(task_id, status)
             elif command == '/help':
                 handle_help()
             elif user_input.startswith('/'):
