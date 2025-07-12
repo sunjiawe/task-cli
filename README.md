@@ -10,6 +10,8 @@
 
 English | [中文文档](./README_ZH.md)
 
+<img src="./assets/decompose.png" alt="AI Task Decomposition Example" width="600" height="auto" style="max-width: 100%;">
+
 </div>
 
 > **In a nutshell**  

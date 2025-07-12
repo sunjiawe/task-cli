@@ -10,6 +10,8 @@
 
 [English](./README.md) | 中文文档
 
+<img src="./assets/decompose.png" alt="AI 任务分解示例" width="600" height="auto" style="max-width: 100%;">
+
 </div>
 
 > **一句话介绍**  
