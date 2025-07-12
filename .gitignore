@@ -7,6 +7,7 @@ build/
 out/
 *.pyc
 __pycache__/
+task_cli_tool.egg-info
 
 # Environment files
 .env

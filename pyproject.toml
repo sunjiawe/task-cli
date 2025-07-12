@@ -1,0 +1,34 @@
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "task-cli-tool"
+version = "0.0.2"
+authors = [
+  { name="sunjiawe", email="727233543@qq.com" },
+]
+description = "An open-source AI Agent that automatically decomposes tasks, generates Gantt charts, and provides project Q&A within your terminal."
+readme = "README.md"
+requires-python = ">=3.11"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "pocketflow>=0.0.1",
+    "rich",
+    "questionary",
+    "pyyaml",
+    "openai",
+    "python-dotenv",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/sunjiawe/task-cli"
+"Bug Tracker" = "https://github.com/sunjiawe/task-cli/issues"
+
+[project.scripts]
+task-cli = "task_cli_main:main"
