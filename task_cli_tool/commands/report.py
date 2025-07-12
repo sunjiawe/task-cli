@@ -1,6 +1,6 @@
 from rich.console import Console
-from utils.storage import load_db
-from utils.llm_api import generate_report
+from ..utils.storage import load_db
+from ..utils.llm_api import generate_report
 
 console = Console()
 

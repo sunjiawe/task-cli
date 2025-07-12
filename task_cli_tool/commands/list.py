@@ -1,5 +1,5 @@
-from utils.storage import query_tasks
-from utils.display import display_tasks
+from ..utils.storage import query_tasks
+from ..utils.display import display_tasks
 
 def handle_list():
     """Handles the '/list' command."""

@@ -2,7 +2,7 @@ import os
 import json
 from rich.console import Console
 from datetime import datetime, timedelta
-from utils.storage import query_tasks, load_db
+from ..utils.storage import query_tasks, load_db
 
 console = Console()
 
@@ -82,7 +82,8 @@ def handle_gantt():
 
     # Load the template
     try:
-        with open("templates/gantt_template.html", "r", encoding="utf-8") as f:
+        template_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'templates', 'gantt_template.html')
+        with open(template_path, "r", encoding="utf-8") as f:
             template = f.read()
     except FileNotFoundError:
         console.print("[red]Error: Gantt chart template not found.[/red]")

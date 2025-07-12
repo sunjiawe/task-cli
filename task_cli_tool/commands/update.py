@@ -1,5 +1,5 @@
 from rich.console import Console
-from utils.storage import load_db, save_db
+from ..utils.storage import load_db, save_db
 
 console = Console()
 

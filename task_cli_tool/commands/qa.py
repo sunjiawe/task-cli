@@ -1,6 +1,6 @@
 from rich.console import Console
-from utils.storage import load_db, query_tasks
-from utils.llm_api import answer_question
+from ..utils.storage import load_db, query_tasks
+from ..utils.llm_api import answer_question
 
 console = Console()
 

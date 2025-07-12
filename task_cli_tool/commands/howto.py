@@ -1,6 +1,6 @@
 from rich.console import Console
-from utils.storage import load_db
-from utils.llm_api import get_task_advice
+from ..utils.storage import load_db
+from ..utils.llm_api import get_task_advice
 
 console = Console()
 

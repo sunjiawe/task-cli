@@ -9,18 +9,18 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Import command handlers
-from commands.init import handle_init
-from commands.list import handle_list
-from commands.decompose import handle_decompose
-from commands.howto import handle_howto
-from commands.report import handle_report
-from commands.qa import handle_qa
-from commands.update import handle_update
-from commands.help import handle_help
-from commands.gantt import handle_gantt
+from .commands.init import handle_init
+from .commands.list import handle_list
+from .commands.decompose import handle_decompose
+from .commands.howto import handle_howto
+from .commands.report import handle_report
+from .commands.qa import handle_qa
+from .commands.update import handle_update
+from .commands.help import handle_help
+from .commands.gantt import handle_gantt
 
 # Import utilities
-from utils.storage import query_tasks
+from .utils.storage import query_tasks
 
 console = Console()
 

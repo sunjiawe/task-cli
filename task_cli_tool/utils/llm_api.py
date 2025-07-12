@@ -1,8 +1,8 @@
 import json
 import yaml
 from datetime import datetime
-from utils.call_llm import call_llm
-from utils.storage import get_config
+from .call_llm import call_llm
+from .storage import get_config
 
 def decompose_requirement(requirement: str, project_context: dict, feedback: str = None, previous_tasks: list = None) -> list:
     """

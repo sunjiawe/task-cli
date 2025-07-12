@@ -1,7 +1,7 @@
 import os
 import questionary
 from rich.console import Console
-from utils.storage import init_project
+from ..utils.storage import init_project
 
 console = Console()
 

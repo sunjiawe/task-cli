@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "task-cli-tool"
-version = "0.0.2"
+version = "0.0.3"
 authors = [
   { name="sunjiawe", email="727233543@qq.com" },
 ]
@@ -31,4 +31,4 @@ dependencies = [
 "Bug Tracker" = "https://github.com/sunjiawe/task-cli/issues"
 
 [project.scripts]
-task-cli = "task_cli_main:main"
+task-cli = "task_cli_tool.task_cli_main:main"
