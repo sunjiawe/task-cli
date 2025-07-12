@@ -9,6 +9,11 @@
         .gantt-chart {
             grid-template-columns: 250px 1fr;
         }
+        .gantt-tasks {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-800 font-sans">
@@ -83,7 +88,7 @@
 
             tasks.forEach(task => {
                 const taskEl = document.createElement('div');
-                taskEl.className = 'p-3 font-medium whitespace-nowrap overflow-hidden text-ellipsis border-b border-gray-200 h-14 leading-8';
+                taskEl.className = 'p-3 font-medium whitespace-nowrap overflow-hidden text-ellipsis border-b border-gray-200 h-14 flex items-center';
                 taskEl.textContent = task.title;
                 taskEl.id = `task-name-${task.id}`;
                 ganttTasks.appendChild(taskEl);
