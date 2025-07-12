@@ -64,7 +64,7 @@ def handle_gantt():
             
             if max_dep_end_date and task["start"] < max_dep_end_date:
                 task["start"] = max_dep_end_date
-                task["end"] = task["start"] + task["duration"]
+                # task["end"] = task["start"] + task["duration"]  # 暂时不推移deadline，否则项目周期会被拉得很长
                 changed = True
 
         if not changed:
