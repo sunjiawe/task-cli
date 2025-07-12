@@ -3,6 +3,10 @@ import sys
 import questionary
 from rich.console import Console
 from questionary.prompts.autocomplete import WordCompleter
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Import command handlers
 from commands.init import handle_init

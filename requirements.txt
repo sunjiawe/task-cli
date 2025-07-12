@@ -3,3 +3,4 @@ rich
 questionary
 pyyaml
 openai
+python-dotenv
