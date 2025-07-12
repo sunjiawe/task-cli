@@ -28,13 +28,15 @@ def handle_gantt():
                 if due_date < start_date:
                     due_date = start_date
 
+                duration = due_date - start_date
                 # Pass more task details for the tooltip
                 tasks_with_dates.append({
                     "id": task.get("task_id"),
                     "title": task.get("title"),
                     "description": task.get("description", "No description."),
-                    "start": start_date.isoformat(),
-                    "end": due_date.isoformat(),
+                    "start": start_date,
+                    "end": due_date,
+                    "duration": duration,
                     "status": task.get("status", "todo"),
                     "difficulty": task.get("difficulty", "N/A"),
                     "estimated_hours": task.get("estimated_hours", "N/A"),
@@ -47,8 +49,36 @@ def handle_gantt():
         console.print("[yellow]No tasks with valid start and due dates found.[/yellow]")
         return
 
-    min_date = min(datetime.fromisoformat(t["start"]) for t in tasks_with_dates).date()
-    max_date = max(datetime.fromisoformat(t["end"]) for t in tasks_with_dates).date()
+    tasks_map = {t["id"]: t for t in tasks_with_dates}
+
+    # Iteratively adjust start dates for dependencies
+    for _ in range(len(tasks_with_dates) + 1):
+        changed = False
+        for task in tasks_with_dates:
+            max_dep_end_date = None
+            for dep_id in task["dependencies"]:
+                dep_task = tasks_map.get(dep_id)
+                if dep_task:
+                    if max_dep_end_date is None or dep_task["end"] > max_dep_end_date:
+                        max_dep_end_date = dep_task["end"]
+            
+            if max_dep_end_date and task["start"] < max_dep_end_date:
+                task["start"] = max_dep_end_date
+                task["end"] = task["start"] + task["duration"]
+                changed = True
+
+        if not changed:
+            break
+    
+    min_date = min(t["start"] for t in tasks_with_dates)
+    max_date = max(t["end"] for t in tasks_with_dates)
+
+    # Convert date objects back to strings for JSON and remove temp fields
+    for task in tasks_with_dates:
+        task["start"] = task["start"].isoformat()
+        task["end"] = task["end"].isoformat()
+        if "duration" in task:
+            del task["duration"]
 
     # Load the template
     try:
