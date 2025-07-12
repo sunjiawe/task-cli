@@ -6,7 +6,7 @@ def call_llm(prompt):
     if os.environ.get('DEBUG_MODE') == 'true':
         print(f"--- PROMPT ---\n{prompt}\n--- END PROMPT ---")
     from openai import OpenAI
-    client = OpenAI(api_key="YOUR_DEEPSEEK_API_KEY", base_url="https://api.deepseek.com")
+    client = OpenAI(api_key=os.environ.get("DEEPSEEK_API_KEY"), base_url="https://api.deepseek.com")
     r = client.chat.completions.create(
         model="deepseek-chat",
         messages=[{"role": "user", "content": prompt}]

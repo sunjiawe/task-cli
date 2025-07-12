@@ -49,8 +49,11 @@ python main.py init
 
 ### 启动项目助手
 
-想不初始化完成之后，运行程序进入助手终端：
+在使用之前，你需要配置环境变量`DEEPSEEK_API_KEY`才能正常使用LLM的api
+
+项目初始化完成之后，运行程序进入助手终端：
 ```
+set DEEPSEEK_API_KEY="your-api-key"
 python main.py
 ```
 

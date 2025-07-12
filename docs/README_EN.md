@@ -49,8 +49,11 @@ python main.py init
 
 ### Start the Project Assistant
 
+Before use, you need to configure environment variable `DEEPSEEK_API_KEY` to use the LLM's API properly.
+
 After initialization, run the program to enter the assistant terminal:
 ```
+set DEEPSEEK_API_KEY="your-api-key"
 python main.py
 ```
 
