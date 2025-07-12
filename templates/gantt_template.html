@@ -155,34 +155,49 @@
         }
 
         function drawDependencies() {
-            tasks.forEach(task => {
-                if (task.dependencies && task.dependencies.length > 0) {
-                    task.dependencies.forEach(depId => {
-                        const fromBar = document.getElementById(`task-bar-${depId}`);
-                        const toBar = document.getElementById(`task-bar-${task.id}`);
-                        if (fromBar && toBar) {
-                            const fromRect = fromBar.getBoundingClientRect();
-                            const toRect = toBar.getBoundingClientRect();
-                            const containerRect = ganttRows.getBoundingClientRect();
+            // Use rAF to ensure layout is stable before reading dimensions.
+            requestAnimationFrame(() => {
+                dependencyLines.innerHTML = ''; // Clear existing lines
+                const rowsContainer = document.querySelector('.gantt-rows');
+                // The top offset of the rows container relative to the timeline container is the height of the header.
+                const rowsTopOffset = rowsContainer.offsetTop;
 
-                            const startX = fromRect.right - containerRect.left;
-                            const startY = fromRect.top - containerRect.top + fromRect.height / 2;
-                            const endX = toRect.left - containerRect.left - 10;
-                            const endY = toRect.top - containerRect.top + toRect.height / 2;
+                tasks.forEach(task => {
+                    if (task.dependencies && task.dependencies.length > 0) {
+                        task.dependencies.forEach(depId => {
+                            const fromBar = document.getElementById(`task-bar-${depId}`);
+                            const toBar = document.getElementById(`task-bar-${task.id}`);
 
-                            const line = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-                            line.setAttribute('d', `M ${startX} ${startY} L ${startX + 20} ${startY} L ${startX + 20} ${endY} L ${endX} ${endY}`);
-                            line.setAttribute('stroke', 'rgb(107 114 128)');
-                            line.setAttribute('stroke-width', '1.5');
-                            line.setAttribute('fill', 'none');
-                            line.setAttribute('marker-end', 'url(#arrowhead)');
-                            line.classList.add('dependency-line', 'transition-all', 'duration-200');
-                            line.dataset.fromTask = depId;
-                            line.dataset.toTask = task.id;
-                            dependencyLines.appendChild(line);
-                        }
-                    });
-                }
+                            if (fromBar && toBar) {
+                                const fromRow = fromBar.parentElement; // This is the .task-row div
+                                const toRow = toBar.parentElement;
+
+                                // X-coordinate is the horizontal offset within the timeline.
+                                const startX = fromBar.offsetLeft + fromBar.offsetWidth;
+                                const endX = toBar.offsetLeft;
+
+                                // Y-coordinate is calculated by chaining offsets from the timeline container down to the bar.
+                                // This is robust and independent of the page's scroll position.
+                                const startY = rowsTopOffset + fromRow.offsetTop + fromBar.offsetTop + (fromBar.offsetHeight / 2);
+                                const endY = rowsTopOffset + toRow.offsetTop + toBar.offsetTop + (toBar.offsetHeight / 2);
+
+                                const line = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                                const arrowOffset = 10;
+                                const pathData = `M ${startX} ${startY} C ${startX + 40} ${startY}, ${endX - 40 - arrowOffset} ${endY}, ${endX - arrowOffset} ${endY}`;
+
+                                line.setAttribute('d', pathData);
+                                line.setAttribute('stroke', 'rgb(107 114 128)');
+                                line.setAttribute('stroke-width', '1.5');
+                                line.setAttribute('fill', 'none');
+                                line.setAttribute('marker-end', 'url(#arrowhead)');
+                                line.classList.add('dependency-line', 'transition-all', 'duration-200');
+                                line.dataset.fromTask = depId;
+                                line.dataset.toTask = task.id;
+                                dependencyLines.appendChild(line);
+                            }
+                        });
+                    }
+                });
             });
         }
 
@@ -255,6 +270,9 @@
         document.getElementById('day-view').addEventListener('click', () => { currentView = 'day'; renderGantt(); });
         document.getElementById('week-view').addEventListener('click', () => { currentView = 'week'; renderGantt(); });
         document.getElementById('month-view').addEventListener('click', () => { currentView = 'month'; renderGantt(); });
+
+        // Redraw dependency lines on window resize to ensure they stay aligned.
+        window.addEventListener('resize', drawDependencies);
 
         renderGantt();
     </script>
