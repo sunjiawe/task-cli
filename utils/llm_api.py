@@ -4,13 +4,25 @@ from datetime import datetime
 from utils.call_llm import call_llm
 from utils.storage import get_config
 
-def decompose_requirement(requirement: str, project_context: dict) -> list:
+def decompose_requirement(requirement: str, project_context: dict, feedback: str = None, previous_tasks: list = None) -> list:
     """
-    Decomposes a user's requirement into a list of tasks.
+    Decomposes a user's requirement into a list of tasks, with optional feedback loops.
     """
     config = get_config()
     language = config.get("language", "en")
     current_date = datetime.now().strftime("%Y-%m-%d")
+    
+    feedback_prompt = ""
+    if feedback and previous_tasks:
+        feedback_prompt = f"""## Previous Attempt
+Here was the previous list of tasks you generated:
+{json.dumps(previous_tasks, indent=2)}
+
+The user has provided the following feedback for refinement:
+User Feedback: "{feedback}"
+
+Please revise the task list based on this feedback."""
+
     prompt = f"""
 # Role: AI Project Manager
 
@@ -25,6 +37,8 @@ def decompose_requirement(requirement: str, project_context: dict) -> list:
 Decompose the following user requirement into a list of actionable tasks.
 
 Requirement: "{requirement}"
+
+{feedback_prompt}
 
 ## Rules
 - Output must be a valid YAML list of task objects.
