@@ -37,16 +37,11 @@
 
 ### 1. 安装
 
-```bash
-# 克隆仓库
-git clone https://github.com/sunjiawe/task-cli.git
-cd task-cli
+```
+pip install task-cli-tool
 
-# 创建虚拟环境（可选）
-python -m venv venv && source venv/bin/activate  # Windows: venv\Scripts\activate
-
-# 安装依赖
-pip install -r requirements.txt
+# 测试命令
+task-cli
 ```
 
 ## 📖 详细使用指南
@@ -56,7 +51,7 @@ pip install -r requirements.txt
 使用 `init` 命令开始一个新项目：
 
 ```bash
-python main.py init
+task-cli init
 ? Enter project name: 跨平台待办事项
 ? Enter project goal: 所有软件功能可正常使用
 ```
@@ -68,7 +63,7 @@ python main.py init
 项目初始化完成之后，运行程序进入助手终端：
 ```
 set DEEPSEEK_API_KEY="your-api-key"
-python main.py
+task-cli
 ```
 
 ## 📖 命令详解
@@ -133,6 +128,22 @@ python main.py
 - 发现 Bug → [提交 Issue](https://github.com/sunjiawe/task-cli/issues)  
 - 功能建议 → [开启 Discussion](https://github.com/sunjiawe/task-cli/discussions)  
 - 代码贡献 → 提交 Pull Request
+
+
+开发环境：
+```bash
+# 克隆仓库
+git clone https://github.com/sunjiawe/task-cli.git
+cd task-cli
+
+# 创建虚拟环境（可选）
+python -m venv venv && source venv/bin/activate  # Windows: venv\Scripts\activate
+
+# 安装依赖
+pip install -r requirements.txt
+pip install -e .
+task-cli
+```
 
 ---
 

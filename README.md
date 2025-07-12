@@ -37,15 +37,10 @@ English | [中文文档](./README_ZH.md)
 ### 1. Installation
 
 ```bash
-# Clone the repository
-git clone https://github.com/sunjiawe/task-cli.git
-cd task-cli
+pip install task-cli-tool
 
-# Create a virtual environment (optional)
-python -m venv venv && source venv/bin/activate  # Windows: venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
+# test
+task-cli
 ```
 
 ## 📖 Detailed Usage Guide
@@ -55,7 +50,7 @@ pip install -r requirements.txt
 Use the `init` command to start a new project:
 
 ```bash
-python main.py init
+task-cli init
 ? Enter project name: Cross-platform To-Do App
 ? Enter project goal: All software features are fully functional
 ```
@@ -67,7 +62,7 @@ Before use, you need to configure the `DEEPSEEK_API_KEY` environment variable to
 After initialization, run the program to enter the assistant terminal:
 ```
 set DEEPSEEK_API_KEY="your-api-key"
-python main.py
+task-cli
 ```
 
 ## 📖 Command Details
@@ -133,6 +128,22 @@ All forms of contribution are welcome!
 - Found a Bug → [Submit an Issue](https://github.com/sunjiawe/task-cli/issues)  
 - Feature Suggestion → [Start a Discussion](https://github.com/sunjiawe/task-cli/discussions)  
 - Code Contribution → Submit a Pull Request
+
+
+How to dev：
+```bash
+# Clone the repository
+git clone https://github.com/sunjiawe/task-cli.git
+cd task-cli
+
+# Create a virtual environment (optional)
+python -m venv venv && source venv/bin/activate  # Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+pip install -e .
+task-cli
+```
 
 ---
 
