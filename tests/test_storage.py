@@ -10,9 +10,9 @@ from unittest.mock import patch
 from datetime import datetime
 
 # Import the module to allow modifying its global variables for testing
-from utils import storage
+from task_cli_tool.utils import storage
 # Also import the functions to be tested
-from utils.storage import init_project, load_db, save_db, query_tasks
+from task_cli_tool.utils.storage import init_project, load_db, save_db, query_tasks
 
 class TestStorage(unittest.TestCase):
 
@@ -69,8 +69,8 @@ class TestStorage(unittest.TestCase):
         data = load_db()
         self.assertEqual(data, self.mock_db_data)
 
-    @patch('utils.storage.datetime')
-    @patch('utils.storage.load_db')
+    @patch('task_cli_tool.utils.storage.datetime')
+    @patch('task_cli_tool.utils.storage.load_db')
     def test_query_tasks(self, mock_load_db, mock_datetime):
         """Test querying tasks with different criteria."""
         mock_load_db.return_value = self.mock_db_data

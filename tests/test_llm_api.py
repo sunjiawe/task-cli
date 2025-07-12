@@ -5,7 +5,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 import unittest
 from unittest.mock import patch, MagicMock
-from utils.llm_api import decompose_requirement, get_task_advice, generate_report, answer_question
+from task_cli_tool.utils.llm_api import decompose_requirement, get_task_advice, generate_report, answer_question
 
 class TestLlmApi(unittest.TestCase):
 
@@ -17,7 +17,7 @@ class TestLlmApi(unittest.TestCase):
         }
         self.mock_task = {"task_id": "T1", "title": "Write a unit test", "description": "..."}
 
-    @patch('utils.llm_api.call_llm')
+    @patch('task_cli_tool.utils.llm_api.call_llm')
     def test_decompose_requirement(self, mock_call_llm):
         """Test that decompose_requirement correctly parses valid LLM YAML output."""
         # Mock the raw YAML string returned by the LLM
@@ -57,7 +57,7 @@ class TestLlmApi(unittest.TestCase):
         self.assertIn("dependencies", new_tasks[0])
         self.assertEqual(new_tasks[0]['dependencies'][0], "T1")
 
-    @patch('utils.llm_api.call_llm')
+    @patch('task_cli_tool.utils.llm_api.call_llm')
     def test_decompose_requirement_invalid_yaml(self, mock_call_llm):
         """Test that decompose_requirement returns an empty list for invalid YAML."""
         mock_call_llm.return_value = "This is not valid YAML"
@@ -65,7 +65,7 @@ class TestLlmApi(unittest.TestCase):
         new_tasks = decompose_requirement("test requirement", self.mock_project_context)
         self.assertEqual(new_tasks, [])
 
-    @patch('utils.llm_api.call_llm')
+    @patch('task_cli_tool.utils.llm_api.call_llm')
     def test_get_task_advice(self, mock_call_llm):
         """Test that get_task_advice returns the direct LLM response."""
         mock_advice = "Just do it!"
@@ -77,7 +77,7 @@ class TestLlmApi(unittest.TestCase):
         self.assertIn(self.mock_task['title'], mock_call_llm.call_args[0][0])
         self.assertEqual(advice, mock_advice)
 
-    @patch('utils.llm_api.call_llm')
+    @patch('task_cli_tool.utils.llm_api.call_llm')
     def test_generate_report(self, mock_call_llm):
         """Test that generate_report returns the direct LLM response."""
         mock_report = "# Project Report\nEverything is on track."
@@ -88,7 +88,7 @@ class TestLlmApi(unittest.TestCase):
         mock_call_llm.assert_called_once()
         self.assertEqual(report, mock_report)
 
-    @patch('utils.llm_api.call_llm')
+    @patch('task_cli_tool.utils.llm_api.call_llm')
     def test_answer_question(self, mock_call_llm):
         """Test that answer_question returns the direct LLM response."""
         mock_answer = "The answer is 42."
