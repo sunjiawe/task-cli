@@ -1,106 +1,156 @@
 <div align="center">
 
+# 🚀 task-cli – AI-Driven CLI Project Management & Gantt Chart Tool
+
+**An open-source AI Agent that automatically decomposes tasks, generates Gantt charts, and provides project Q&A within your terminal.**
+
 [![GitHub stars](https://img.shields.io/github/stars/sunjiawe/task-cli?style=social)](https://github.com/sunjiawe/task-cli/stargazers)
 [![License](https://img.shields.io/github/license/sunjiawe/task-cli)](https://github.com/sunjiawe/task-cli/blob/main/LICENSE)
 [![Python Version](https://img.shields.io/badge/python-3.13%2B-blue)](https://www.python.org/downloads/)
 
-
-**一个AI驱动的 项目管理agent** （灵感来源：gemini-cli、claude-task-master）
-
-[English](./docs/README_EN.md) | 中文文档
+English | [中文文档](./README_ZH.md)
 
 </div>
 
-## 🔍 使用场景
+> **In a nutshell**  
+> task-cli leverages an LLM to handle **AI project management** from the command line: automatically generating task lists, interactive Gantt charts, and real-time Q&A.
 
-- **智能项目管理** - 自动为你的项目进行任务分解和进度报告。
-- **项目进度可视化** - 通过甘特图清晰地展示任务依赖和时间线。
-
-## ✨ 特性
-
-- 🔧 **强大的命令行工具** - 提供 `init`, `decompose`, `gantt`, `report` 等丰富的命令，覆盖项目全生命周期。
-- 📝 **自动化任务分解** - 基于高阶目标，利用 LLM 自动将复杂任务分解为可执行的子任务。支持多轮对话、不断调整 LLM 生成的任务规划。
-- 📊 **可视化甘特图** - 根据项目计划自动生成交互式甘特图，直观地跟踪项目进度。
-- 💬 **项目智能问答 (Q&A)** - 与你的项目数据库对话，快速获取项目信息。
+## 🔍 Use Cases
+| Scenario | Traditional Method | The task-cli Advantage |
+|---|---|---|
+| Requirements Analysis | Manually breaking down tasks | **AI-powered decomposition** of complex requirements into executable sub-tasks |
+| Progress Tracking | Manual updates in Excel/Notion | **One-click Gantt chart generation** for real-time timeline visualization |
+| Project Q&A | Searching through documents | **Natural language conversation** to quickly retrieve project information |
 
 
-## 🚀 快速开始
+## ✨ Core Features
+- 🤖 **AI Task Decomposition** – Based on high-level objectives, utilizes an LLM to automatically break down complex tasks into executable sub-tasks. Supports multi-turn dialogue to continuously refine the generated task plan.
+- 📊 **Interactive Gantt Charts** – Automatically generates HTML Gantt charts, making task dependencies clear and intuitively tracking project progress.
+- 💬 **Intelligent Project Q&A** – Chat with your project database using natural language queries.
+- 🔧 **Rich CLI Commands** – `init`, `decompose`, `gantt`, `report` cover the entire project lifecycle.
+- 🌍 **Language Support** – The agent can be configured to respond in the user's preferred language.
 
-### 安装
+---
+
+## 🚀 Quick Start
+
+### 1. Installation
 
 ```bash
-# 克隆仓库
+# Clone the repository
 git clone https://github.com/sunjiawe/task-cli.git
 cd task-cli
 
-# 安装依赖
+# Create a virtual environment (optional)
+python -m venv venv && source venv/bin/activate  # Windows: venv\Scripts\activate
+
+# Install dependencies
 pip install -r requirements.txt
 ```
 
-## 📖 详细使用指南
+## 📖 Detailed Usage Guide
 
-### 初始化项目
+### 1. Initialize a Project
 
-使用 `init` 命令开始一个新项目：
+Use the `init` command to start a new project:
 
 ```bash
 python main.py init
+? Enter project name: Cross-platform To-Do App
+? Enter project goal: All software features are fully functional
 ```
 
-### 启动项目助手
+### 2. Start the Project Assistant
 
-在使用之前，你需要配置环境变量`DEEPSEEK_API_KEY`才能正常使用LLM的api
+Before use, you need to configure the `DEEPSEEK_API_KEY` environment variable to use the LLM's API.
 
-项目初始化完成之后，运行程序进入助手终端：
+After initialization, run the program to enter the assistant terminal:
 ```
 set DEEPSEEK_API_KEY="your-api-key"
 python main.py
 ```
 
-### 子命令
+## 📖 Command Details
 
-输入 `/` 触发子命令的自动补全
+Type `/` to trigger subcommand autocompletion.
+
+| Command | Description | Example |
+|---|---|---|
+| `/decompose <req>` | AI Task Decomposition | `/decompose Develop a cross-platform to-do app` |
+| `/list` | View the task list | `/list` |
+| `/howto <id>` | Get guidance on a task | `/howto design-ui` |
+| `/update <id>` | Update task status | `/update design-ui done` |
+| `/gantt` | Generate a Gantt chart | `/gantt` |
+| `/report` | Generate a project summary | `/report` |
+| `/qa <question>` | Project Q&A | `/qa What tasks are due this week?` |
+| `/help` | Display help | `/help` |
+
+> **Debug Mode**: Set the environment variable `DEBUG_MODE=true` to view LLM request details.
+
+---
+
+## 🎯 Examples
+
+### 1. Task Decomposition
+```
+> /decompose Develop a cross-platform to-do app
+✅ Decomposed into 8 sub-tasks. View with /list
+```
+
+### 2. Generate Gantt Chart
+```
+> /gantt
+📊 Gantt chart saved to gantt.html
+```
+Open `gantt.html` to see the interactive timeline:
+
+![Gantt Demo](./assets/gantt.png)
+
+### 3. Others
 
 ```bash
-# 让 AI Agent 帮助你分解任务
-/decompose <描述你的需求>
-
-# 查看任务清单
-/list
-
-# 咨询助手，对执行单一任务给与指导
+# Ask the assistant for guidance on executing a single task
 /howto 
 
-# 更新任务状态
+# Update task status
 /update
 
-# 生成甘特图(静态html文件)
-/gantt
-
-# 项目总结报告
+# Project summary report
 /report
 
-# 自然语言对话，询问关于项目的任何问题
+# Ask any questions about the project in natural language
 /qa
 
-# 显示帮助信息
+# Display help information
 /help
 ```
+---
 
-调试提示词： 设置环境变量DEBUG_MODE=true
-```
-set DEBUG_MODE=true
-```
+## 🤝 Contributing
 
-## 🤝 贡献
+All forms of contribution are welcome!
 
-欢迎通过提交 Pull Request 或创建 Issue 来为本项目做出贡献！
+- Found a Bug → [Submit an Issue](https://github.com/sunjiawe/task-cli/issues)  
+- Feature Suggestion → [Start a Discussion](https://github.com/sunjiawe/task-cli/discussions)  
+- Code Contribution → Submit a Pull Request
 
-## 📄 许可证
+---
 
-本项目使用 Apache 2.0 许可证。
+## 📄 License
 
-## 🙏 致谢
+This project is licensed under the Apache 2.0 License.
+[Apache 2.0](./LICENSE) © 2025 sunjiawe
 
-- [Pocket Flow](https://github.com/The-Pocket/PocketFlow) - 驱动本项目的极简 Agent 框架。
+## 🙏 Acknowledgments
+
+- [Pocket Flow](https://github.com/The-Pocket/PocketFlow) - The minimalist Agent framework that drives this project.
 - [gemini-cli](https://github.com/google-gemini/gemini-cli) - An open-source AI agent that brings the power of Gemini directly into your terminal.
+
+---
+
+<div align="center">
+
+⭐ If task-cli is helpful to you, please give it a Star!  
+💬 For any questions, feel free to [open an issue](https://github.com/sunjiawe/task-cli/issues/new) or join the discussion.
+
+</div>
